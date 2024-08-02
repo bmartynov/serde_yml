@@ -1522,7 +1522,7 @@ fn parse_tag(libyml_tag: &Option<Tag>) -> Option<&str> {
         }
         str::from_utf8(bytes).ok()
         // todo: figure out better solution
-    } else if !bytes.is_empty() && bytes.iter().all(|c| c.is_ascii_uppercase()) {
+    } else if !bytes.is_empty() && !bytes.contains(&b':') {
         str::from_utf8(bytes).ok()
     } else {
         None
