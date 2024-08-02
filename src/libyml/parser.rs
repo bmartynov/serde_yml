@@ -303,7 +303,7 @@ unsafe fn optional_tag(tag: *const u8) -> Option<Tag> {
     let ptr = NonNull::new(tag as *mut i8)?;
     let cstr = CStr::from_ptr(ptr);
     let mut bytes = cstr.to_bytes().to_vec();
-    bytes.retain(|b| *b != b'<' || *b != b'>');
+    bytes.retain(|b| !matches!(b, b'<' | b'>'));
 
     Some(Tag(Box::from(bytes)))
 }
