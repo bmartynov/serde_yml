@@ -806,7 +806,7 @@ impl<'de, 'document> DeserializerFromEvents<'de, 'document> {
             while de::MapAccess::next_entry::<IgnoredAny, IgnoredAny>(
                 &mut map,
             )?
-            .is_some()
+                .is_some()
             {}
             map.len
         };
@@ -964,7 +964,7 @@ struct EnumAccess<'de, 'document, 'variant> {
 }
 
 impl<'de, 'variant> de::EnumAccess<'de>
-    for EnumAccess<'de, '_, 'variant>
+for EnumAccess<'de, '_, 'variant>
 {
     type Error = Error;
     type Variant = DeserializerFromEvents<'de, 'variant>;
@@ -1515,10 +1515,14 @@ fn invalid_type(event: &Event<'_>, exp: &dyn Expected) -> Error {
 
 fn parse_tag(libyml_tag: &Option<Tag>) -> Option<&str> {
     let mut bytes: &[u8] = libyml_tag.as_ref()?;
+
     if let (b'!', rest) = bytes.split_first()? {
         if !rest.is_empty() {
             bytes = rest;
         }
+        str::from_utf8(bytes).ok()
+        // todo: figure out better solution
+    } else if !bytes.is_empty() && bytes.iter().all(|c| c.is_ascii_uppercase()) {
         str::from_utf8(bytes).ok()
     } else {
         None
@@ -1526,7 +1530,7 @@ fn parse_tag(libyml_tag: &Option<Tag>) -> Option<&str> {
 }
 
 impl<'de> de::Deserializer<'de>
-    for &mut DeserializerFromEvents<'de, '_>
+for &mut DeserializerFromEvents<'de, '_>
 {
     type Error = Error;
     #[deny(clippy::never_loop)]
@@ -1603,9 +1607,9 @@ impl<'de> de::Deserializer<'de>
                 Event::Void => break visitor.visit_none(),
             }
         }
-        // The de::Error impl creates errors with unknown line and column. Fill
-        // in the position here by looking at the current index in the input.
-        .map_err(|err| error::fix_mark(err, mark, self.path))
+            // The de::Error impl creates errors with unknown line and column. Fill
+            // in the position here by looking at the current index in the input.
+            .map_err(|err| error::fix_mark(err, mark, self.path))
     }
 
     fn deserialize_bool<V>(self, visitor: V) -> Result<V::Value>
@@ -1623,23 +1627,23 @@ impl<'de> de::Deserializer<'de>
                         .deserialize_bool(visitor)
                 }
                 Event::Scalar(scalar)
-                    if is_plain_or_tagged_literal_scalar(
-                        Tag::BOOL,
-                        scalar,
-                        tagged_already,
-                    ) =>
-                {
-                    if let Ok(value) = str::from_utf8(&scalar.value) {
-                        if let Some(boolean) = parse_bool(value) {
-                            break visitor.visit_bool(boolean);
+                if is_plain_or_tagged_literal_scalar(
+                    Tag::BOOL,
+                    scalar,
+                    tagged_already,
+                ) =>
+                    {
+                        if let Ok(value) = str::from_utf8(&scalar.value) {
+                            if let Some(boolean) = parse_bool(value) {
+                                break visitor.visit_bool(boolean);
+                            }
                         }
                     }
-                }
                 _ => {}
             }
             break Err(invalid_type(next, &visitor));
         }
-        .map_err(|err| error::fix_mark(err, mark, self.path))
+            .map_err(|err| error::fix_mark(err, mark, self.path))
     }
 
     fn deserialize_i8<V>(self, visitor: V) -> Result<V::Value>
@@ -1676,25 +1680,25 @@ impl<'de> de::Deserializer<'de>
                     break self.jump(&mut pos)?.deserialize_i64(visitor)
                 }
                 Event::Scalar(scalar)
-                    if is_plain_or_tagged_literal_scalar(
-                        Tag::INT,
-                        scalar,
-                        tagged_already,
-                    ) =>
-                {
-                    if let Ok(value) = str::from_utf8(&scalar.value) {
-                        if let Some(int) =
-                            parse_signed_int(value, i64::from_str_radix)
-                        {
-                            break visitor.visit_i64(int);
+                if is_plain_or_tagged_literal_scalar(
+                    Tag::INT,
+                    scalar,
+                    tagged_already,
+                ) =>
+                    {
+                        if let Ok(value) = str::from_utf8(&scalar.value) {
+                            if let Some(int) =
+                                parse_signed_int(value, i64::from_str_radix)
+                            {
+                                break visitor.visit_i64(int);
+                            }
                         }
                     }
-                }
                 _ => {}
             }
             break Err(invalid_type(next, &visitor));
         }
-        .map_err(|err| error::fix_mark(err, mark, self.path))
+            .map_err(|err| error::fix_mark(err, mark, self.path))
     }
 
     fn deserialize_i128<V>(self, visitor: V) -> Result<V::Value>
@@ -1712,26 +1716,26 @@ impl<'de> de::Deserializer<'de>
                         .deserialize_i128(visitor)
                 }
                 Event::Scalar(scalar)
-                    if is_plain_or_tagged_literal_scalar(
-                        Tag::INT,
-                        scalar,
-                        tagged_already,
-                    ) =>
-                {
-                    if let Ok(value) = str::from_utf8(&scalar.value) {
-                        if let Some(int) = parse_signed_int(
-                            value,
-                            i128::from_str_radix,
-                        ) {
-                            break visitor.visit_i128(int);
+                if is_plain_or_tagged_literal_scalar(
+                    Tag::INT,
+                    scalar,
+                    tagged_already,
+                ) =>
+                    {
+                        if let Ok(value) = str::from_utf8(&scalar.value) {
+                            if let Some(int) = parse_signed_int(
+                                value,
+                                i128::from_str_radix,
+                            ) {
+                                break visitor.visit_i128(int);
+                            }
                         }
                     }
-                }
                 _ => {}
             }
             break Err(invalid_type(next, &visitor));
         }
-        .map_err(|err| error::fix_mark(err, mark, self.path))
+            .map_err(|err| error::fix_mark(err, mark, self.path))
     }
 
     fn deserialize_u8<V>(self, visitor: V) -> Result<V::Value>
@@ -1768,26 +1772,26 @@ impl<'de> de::Deserializer<'de>
                     break self.jump(&mut pos)?.deserialize_u64(visitor)
                 }
                 Event::Scalar(scalar)
-                    if is_plain_or_tagged_literal_scalar(
-                        Tag::INT,
-                        scalar,
-                        tagged_already,
-                    ) =>
-                {
-                    if let Ok(value) = str::from_utf8(&scalar.value) {
-                        if let Some(int) = parse_unsigned_int(
-                            value,
-                            u64::from_str_radix,
-                        ) {
-                            break visitor.visit_u64(int);
+                if is_plain_or_tagged_literal_scalar(
+                    Tag::INT,
+                    scalar,
+                    tagged_already,
+                ) =>
+                    {
+                        if let Ok(value) = str::from_utf8(&scalar.value) {
+                            if let Some(int) = parse_unsigned_int(
+                                value,
+                                u64::from_str_radix,
+                            ) {
+                                break visitor.visit_u64(int);
+                            }
                         }
                     }
-                }
                 _ => {}
             }
             break Err(invalid_type(next, &visitor));
         }
-        .map_err(|err| error::fix_mark(err, mark, self.path))
+            .map_err(|err| error::fix_mark(err, mark, self.path))
     }
 
     fn deserialize_u128<V>(self, visitor: V) -> Result<V::Value>
@@ -1805,26 +1809,26 @@ impl<'de> de::Deserializer<'de>
                         .deserialize_u128(visitor)
                 }
                 Event::Scalar(scalar)
-                    if is_plain_or_tagged_literal_scalar(
-                        Tag::INT,
-                        scalar,
-                        tagged_already,
-                    ) =>
-                {
-                    if let Ok(value) = str::from_utf8(&scalar.value) {
-                        if let Some(int) = parse_unsigned_int(
-                            value,
-                            u128::from_str_radix,
-                        ) {
-                            break visitor.visit_u128(int);
+                if is_plain_or_tagged_literal_scalar(
+                    Tag::INT,
+                    scalar,
+                    tagged_already,
+                ) =>
+                    {
+                        if let Ok(value) = str::from_utf8(&scalar.value) {
+                            if let Some(int) = parse_unsigned_int(
+                                value,
+                                u128::from_str_radix,
+                            ) {
+                                break visitor.visit_u128(int);
+                            }
                         }
                     }
-                }
                 _ => {}
             }
             break Err(invalid_type(next, &visitor));
         }
-        .map_err(|err| error::fix_mark(err, mark, self.path))
+            .map_err(|err| error::fix_mark(err, mark, self.path))
     }
 
     fn deserialize_f32<V>(self, visitor: V) -> Result<V::Value>
@@ -1847,23 +1851,23 @@ impl<'de> de::Deserializer<'de>
                     break self.jump(&mut pos)?.deserialize_f64(visitor)
                 }
                 Event::Scalar(scalar)
-                    if is_plain_or_tagged_literal_scalar(
-                        Tag::FLOAT,
-                        scalar,
-                        tagged_already,
-                    ) =>
-                {
-                    if let Ok(value) = str::from_utf8(&scalar.value) {
-                        if let Some(float) = parse_f64(value) {
-                            break visitor.visit_f64(float);
+                if is_plain_or_tagged_literal_scalar(
+                    Tag::FLOAT,
+                    scalar,
+                    tagged_already,
+                ) =>
+                    {
+                        if let Ok(value) = str::from_utf8(&scalar.value) {
+                            if let Some(float) = parse_f64(value) {
+                                break visitor.visit_f64(float);
+                            }
                         }
                     }
-                }
                 _ => {}
             }
             break Err(invalid_type(next, &visitor));
         }
-        .map_err(|err| error::fix_mark(err, mark, self.path))
+            .map_err(|err| error::fix_mark(err, mark, self.path))
     }
 
     fn deserialize_char<V>(self, visitor: V) -> Result<V::Value>
@@ -1897,7 +1901,7 @@ impl<'de> de::Deserializer<'de>
             }
             other => Err(invalid_type(other, &visitor)),
         }
-        .map_err(|err: Error| error::fix_mark(err, mark, self.path))
+            .map_err(|err: Error| error::fix_mark(err, mark, self.path))
     }
 
     fn deserialize_string<V>(self, visitor: V) -> Result<V::Value>
@@ -2017,7 +2021,7 @@ impl<'de> de::Deserializer<'de>
             Event::Void => visitor.visit_unit(),
             other => Err(invalid_type(other, &visitor)),
         }
-        .map_err(|err| error::fix_mark(err, mark, self.path))
+            .map_err(|err| error::fix_mark(err, mark, self.path))
     }
 
     fn deserialize_unit_struct<V>(
@@ -2077,7 +2081,7 @@ impl<'de> de::Deserializer<'de>
                 }
             }
         }
-        .map_err(|err| error::fix_mark(err, mark, self.path))
+            .map_err(|err| error::fix_mark(err, mark, self.path))
     }
 
     fn deserialize_tuple<V>(
@@ -2133,7 +2137,7 @@ impl<'de> de::Deserializer<'de>
                 }
             }
         }
-        .map_err(|err| error::fix_mark(err, mark, self.path))
+            .map_err(|err| error::fix_mark(err, mark, self.path))
     }
 
     fn deserialize_struct<V>(
@@ -2227,7 +2231,7 @@ impl<'de> de::Deserializer<'de>
                 Event::Void => Err(error::new(ErrorImpl::EndOfStream)),
             };
         }
-        .map_err(|err| error::fix_mark(err, mark, self.path))
+            .map_err(|err| error::fix_mark(err, mark, self.path))
     }
 
     fn deserialize_identifier<V>(self, visitor: V) -> Result<V::Value>
